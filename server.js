@@ -8,8 +8,11 @@ const dotenv = require('dotenv')
 dotenv.config();
 
 // ***************** Bring Routes *****************
-// const BlogRoutes = require('./routes/blog')
 const authRoutes = require('./routes/auth.route');
+const userRoute  = require('./routes/user.rout')
+const categoryRoute = require('./routes/category.rout')
+const tagRoure = require('./routes/tag.route')
+
 
 
 
@@ -18,6 +21,7 @@ const app = express();
 
 
 // ***************** middelwares ***************** 
+app.use(cors());
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: true})); 
 app.use(express.json());
@@ -27,7 +31,9 @@ app.use(cookieParser());
 if(process.env.NODE_ENV === 'development'){
     app.use(cors({origin : `${process.env.CLIENT_URL}`}));
 }
-app.use(cors());
+
+
+
 
 // ***************** DB Connection ***************** 
 mongoose.connect(process.env.DATABASE, {useNewUrlParser: true, useUnifiedTopology: true , useCreateIndex: true})
@@ -37,6 +43,11 @@ mongoose.connect(process.env.DATABASE, {useNewUrlParser: true, useUnifiedTopolog
     
 // ***************** using routes *****************
 app.use('/api',authRoutes);
+app.use('/api',userRoute);
+app.use('/api', categoryRoute)
+app.use('/api', tagRoure)
+
+
 
 
 
