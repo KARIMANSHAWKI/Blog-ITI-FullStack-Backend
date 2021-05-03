@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth.route');
 const userRoute  = require('./routes/user.rout')
 const categoryRoute = require('./routes/category.rout')
 const tagRoure = require('./routes/tag.route')
+const blog = require('./routes/blog.route');
 
 
 
@@ -46,6 +47,7 @@ app.use('/api',authRoutes);
 app.use('/api',userRoute);
 app.use('/api', categoryRoute)
 app.use('/api', tagRoure)
+app.use('/api',blog)
 
 
 
@@ -53,7 +55,7 @@ app.use('/api', tagRoure)
 
 
 // ***************** port ***************** 
-const port = process.env.PORT || 3300;
+const port = process.env.PORT || 3310;
 app.listen(port,()=>{
     console.log(`Server Listen On Port ${port} `)
 })
