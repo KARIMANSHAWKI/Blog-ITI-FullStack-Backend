@@ -160,7 +160,7 @@ exports.listAllCategoriesTAgs = (req, res) => {
                 error : errorHandler(err)
             })
         }
-        categories = c
+        categories =  c
 
         // ****** get categories ****** 
         Tag.find({}).exec((err, t)=>{
@@ -180,7 +180,7 @@ exports.listAllCategoriesTAgs = (req, res) => {
 }
 
 exports.read = (req, res) => {
-
+    const slug = req.body.params.slug.toLowerCase()
 }
 
 exports.remove = (req, res) => {
