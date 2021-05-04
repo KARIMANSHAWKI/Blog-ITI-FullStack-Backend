@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {create, list, listAllCategoriesTAgs, read, remove, update} = require('../controllers/blog.controller')
+const {create, list, listAllCategoriesTAgs, read, remove, update, photo} = require('../controllers/blog.controller')
 const { adminMiddleWare , requireSignin} = require("../controllers/auth.controller");
 
 
@@ -10,6 +10,8 @@ router.get('/blogs-categories-tags', listAllCategoriesTAgs)
 router.get('/blog/:slug', read)
 router.delete('/blog/:slug',requireSignin,adminMiddleWare, remove)
 router.put('/blog/:slug',requireSignin,adminMiddleWare, update)
+router.get('/blog/photo/:slug',photo)
+
 
 
 
