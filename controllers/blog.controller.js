@@ -180,6 +180,7 @@ exports.listAllCategoriesTAgs = (req, res) => {
     })
 }
 
+// ******************************** Single blog *************************
 exports.read = (req, res) => {
     const slug = req.params.slug.toLowerCase();
     Blog.findOne({slug})
@@ -197,6 +198,7 @@ exports.read = (req, res) => {
     })
 }
 
+// ************************ Delete Blog **************************
 exports.remove = (req, res) => {
     const slug = req.params.slug.toLowerCase();
     Blog.findOneAndRemove({slug}).exec((err, data)=>{
@@ -213,6 +215,8 @@ exports.remove = (req, res) => {
 }
 
 
+
+// ******************************** Update Blog **********************
 exports.update = (req, res) => {
     const slug = req.params.slug.toLowerCase();
 
@@ -275,6 +279,7 @@ exports.update = (req, res) => {
 };
 
 
+// *********************** Show Photo *******************
 exports.photo = (req, res) => {
     const slug = req.params.slug.toLowerCase();
     Blog.findOne({ slug })
@@ -298,7 +303,7 @@ exports.listRelated = (req, res) => {
 
     Blog.find({_id : {$ne : _id}, categories : {$in : categories}})
     .limit(limit)
-    .populate('postedBy', '_id name profile')
+    .populate('postedBy', '_id name username profile')
     .select('title slug excerpt postedBy createdAt updatedAt')
     .exec((err, blogs)=>{
         if(err){

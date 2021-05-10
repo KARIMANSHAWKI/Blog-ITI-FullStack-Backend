@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       max: 32,
       unique: true,
       index: true,
-      lowercase: true,
+      lowercase: true, 
     },
     name: {
       type: String,
@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     photo: {
-      type: Buffer,
+      data: Buffer,
       contentType: String,
     },
     resetPasswordLink: {
