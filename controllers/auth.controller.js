@@ -1,8 +1,8 @@
-const User = require('../models/user.model')
-const shortId = require('shortid')
-const jwt = require('jsonwebtoken')
-const expressJwt = require('express-jwt')
-
+const User = require("../models/user.model");
+const shortId = require("shortid");
+const jwt = require("jsonwebtoken");
+const expressJwt = require("express-jwt");
+const { errorHandler } = require("../helpers/dbErrorHandeler");
 
 // ************* Data to signup **************
 
@@ -11,143 +11,154 @@ const expressJwt = require('express-jwt')
     2-create user and save it in database
 */
 
+exports.signup = (req, res) => {
+  let username = shortId.generate();
+  let profile = `${process.env.CLIENT_URL}/profile/${username}`;
 
-exports.signup =  (req,res)=>{
+  const user = new User({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    username,
+    profile,
+  });
 
-    let username = shortId.generate();
-    let profile = `${process.env.CLIENT_URL}/profile/${username}`;
-     
-    const user = new User({
-            name : req.body.name,
-            email : req.body.email,
-            password : req.body.password,
-            username,
-            profile
-    });
+  try {
+    const saveuser = user.save();
+  } catch (err) {
+    res.status(400).send(err);
+  }
 
-    try{
-        const saveuser =  user.save();
-    }catch(err){
-        res.status(400).send(err);
+  User.findOne({ email: req.body.email }).exec((err, user) => {
+    if (user) {
+      res.status(400).json({
+        error: "Email is taken !",
+      });
     }
 
-
-  User.findOne({email : req.body.email}).exec((err, user)=>{
-      if(user){
-          res.status(400).json({
-              error : 'Email is taken !'
-          })
-      }
-
     // ********* generate username and profile ********
-      const {name, email, password} = req.body;
-      let username = shortId.generate();
-      let profile = `${process.env.CLIENT_URL}/profile/${username}`;
+    const { name, email, password } = req.body;
+    let username = shortId.generate();
+    let profile = `${process.env.CLIENT_URL}/profile/${username}`;
 
     // ********* Add New User ********
-    let newUser = new User({username,name,email,profile,password});
-    newUser.save((err,secret)=>{
-        if(err){
-             res.status(400).json({
-                error : err
-            })
-        } else {
-            // res.json({
-            //     user:secret
-            // })
-            res.json({
-                message : "Signup secret ! "
-            })
-        }
-    })
-
-  })
-}
+    let newUser = new User({ username, name, email, profile, password });
+    newUser.save((err, secret) => {
+      if (err) {
+        res.status(400).json({
+          error: err,
+        });
+      } else {
+        // res.json({
+        //     user:secret
+        // })
+        res.json({
+          message: "Signup secret ! ",
+        });
+      }
+    });
+  });
+};
 // ********************************************************************** //
 
 // ******************* Sign IN ****************** //
-exports.signin = (req,res)=>{
+exports.signin = (req, res) => {
+  const { email, password } = req.body;
 
-    const {email, password} = req.body;
-
-    // check if user exists
-    User.findOne({email}).exec((err, user)=>{
-        if(err || !user){
-            return res.status(400).json({
-                err : "User With That Email Does Not Exist Please, SignUp!"
-            })
-        }
-
-            // authenticate
-            if(!user.authenticate(password)){
-                return res.status(400).json({
-                    err : "Email And Password Donot match!"
-                })
-            }
-
-            // generate atoken and send it to client
-            const token = jwt.sign({_id : user._id}, process.env.JWT_SCRET, {expiresIn : '1d'} )
-            res.cookie('token', token, {expiresIn : '1d'})
-            const {_id, username, name, email, role} = user
-            return res.json({
-                token,
-                user: {_id, username, name, email, role}
-            })
-
-    })
-}
-
-    // ************************************************************** //
-
-    // ************** Sign Out ***************** //
-    exports.signout = (req,res) => {
-       res.clearCookie('token');
-       res.json({
-           message : "SignOut Success !"
-       })
-
+  // check if user exists
+  User.findOne({ email }).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        err: "User With That Email Does Not Exist Please, SignUp!",
+      });
     }
 
+    // authenticate
+    if (!user.authenticate(password)) {
+      return res.status(400).json({
+        err: "Email And Password Donot match!",
+      });
+    }
+
+    // generate atoken and send it to client
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SCRET, {
+      expiresIn: "1d",
+    });
+    res.cookie("token", token, { expiresIn: "1d" });
+    const { _id, username, name, email, role } = user;
+    return res.json({
+      token,
+      user: { _id, username, name, email, role },
+    });
+  });
+};
+
+// ************************************************************** //
+
+// ************** Sign Out ***************** //
+exports.signout = (req, res) => {
+  res.clearCookie("token");
+  res.json({
+    message: "SignOut Success !",
+  });
+};
+
 exports.requireSignin = expressJwt({
-    secret : process.env.JWT_SCRET,
-    algorithms: ["HS256"],
-})
+  secret: process.env.JWT_SCRET,
+  algorithms: ["HS256"],
+});
 
 // ***************** Create User Profile Middleware ******************** //
-exports.authMiddleWare = (req, res, next)=>{
-    const authUserId = req.user._id;
-    User.findById({_id : authUserId}).exec((err, user)=>{
-        if(err || !user){
-            return res.status(400).json({
-                error : "User Not Found"
-            })
-        }
+exports.authMiddleWare = (req, res, next) => {
+  const authUserId = req.user._id;
+  User.findById({ _id: authUserId }).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User Not Found",
+      });
+    }
 
-        req.profile = user
-        next()
-
-    })
-
-}
+    req.profile = user;
+    next();
+  });
+};
 
 // ***************** Create Admin Profile Middleware ******************** //
-exports.adminMiddleWare = (req, res, next)=>{
-    const adminUserId = req.user._id;
-    User.findById({_id : adminUserId}).exec((err, user)=>{
-        if(err || !user){
-            return res.status(400).json({
-                error : "user not found"
-            })
-        }
-        if(user.role !== 1){
-            return res.status(400).json({
-                error : "Admin resource . Access denied"
-            })
-        }
+exports.adminMiddleWare = (req, res, next) => {
+  const adminUserId = req.user._id;
+  User.findById({ _id: adminUserId }).exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "user not found",
+      });
+    }
+    if (user.role !== 1) {
+      return res.status(400).json({
+        error: "Admin resource . Access denied",
+      });
+    }
 
-        req.profile = user
-        next()
-    })
-}
+    req.profile = user;
+    next();
+  });
+};
 
-
+// &&&&&&&&&&&&&&& Make Auth UPDATE AND DELETE BLOG &&&&&&&&&&&
+exports.canUpdateDeleteBlog = (req, res, next) => {
+  const slug = req.params.slug.toLowerCase();
+  Blog.finOne({ slug }).exec((err, data) => {
+    if (err) {
+      return res.status(400).json({
+        error: errorHandler(err),
+      });
+    }
+    let authorizedUser =
+      data.postedBy._id.toString() === req.profile._id.toString();
+    if (!authorizedUser) {
+      return res.status(400).json({
+        error: "You are not authorized",
+      });
+    }
+    next();
+  });
+};
