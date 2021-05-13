@@ -15,7 +15,7 @@ const {
 const {
   adminMiddleWare,
   requireSignin,
-  authMiddleWare,
+  authMiddleware,
   canUpdateDeleteBlog
 } = require("../controllers/auth.controller");
 
@@ -31,11 +31,11 @@ router.get("/blog/search", listSearch);
 
 
 // auth user blog crud
-router.post("/user/blog", requireSignin, authMiddleWare, create);
+router.post("/user/blog", requireSignin, authMiddleware, create);
 router.get("/:username/blogs", listByUser);
 
-router.delete("/user/blog/:slug", requireSignin, authMiddleWare,canUpdateDeleteBlog, remove);
-router.put("/user/blog/:slug", requireSignin, authMiddleWare,canUpdateDeleteBlog, update);
+router.delete("/user/blog/:slug", requireSignin, authMiddleware,canUpdateDeleteBlog, remove);
+router.put("/user/blog/:slug", requireSignin, authMiddleware,canUpdateDeleteBlog, update);
 
 
 

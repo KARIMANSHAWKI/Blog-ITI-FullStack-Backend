@@ -3,6 +3,7 @@ const shortId = require("shortid");
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const { errorHandler } = require("../helpers/dbErrorHandeler");
+const Blog = require("../models/blog.model");
 
 // ************* Data to signup **************
 
@@ -12,50 +13,28 @@ const { errorHandler } = require("../helpers/dbErrorHandeler");
 */
 
 exports.signup = (req, res) => {
-  let username = shortId.generate();
-  let profile = `${process.env.CLIENT_URL}/profile/${username}`;
-
-  const user = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    username,
-    profile,
-  });
-
-  try {
-    const saveuser = user.save();
-  } catch (err) {
-    res.status(400).send(err);
-  }
-
   User.findOne({ email: req.body.email }).exec((err, user) => {
     if (user) {
-      res.status(400).json({
-        error: "Email is taken !",
+      return res.status(400).json({
+        err: "Email is taken",
       });
     }
 
-    // ********* generate username and profile ********
     const { name, email, password } = req.body;
     let username = shortId.generate();
     let profile = `${process.env.CLIENT_URL}/profile/${username}`;
 
-    // ********* Add New User ********
-    let newUser = new User({ username, name, email, profile, password });
-    newUser.save((err, secret) => {
+    let newUser = new User({ name, email, password, profile, username });
+    newUser.save((err, success) => {
       if (err) {
-        res.status(400).json({
+        return res.status(400).json({
           error: err,
         });
-      } else {
-        // res.json({
-        //     user:secret
-        // })
-        res.json({
-          message: "Signup secret ! ",
-        });
       }
+     
+      res.json({
+        message: "Signup success! Please signin.",
+      });
     });
   });
 };
@@ -109,15 +88,14 @@ exports.requireSignin = expressJwt({
 });
 
 // ***************** Create User Profile Middleware ******************** //
-exports.authMiddleWare = (req, res, next) => {
+exports.authMiddleware = (req, res, next) => {
   const authUserId = req.user._id;
-  User.findById({ _id: authUserId }).exec((err, user) => {
-    if (err || !user) {
+  User.findById({ _id: authUserId }).exec((error, user) => {
+    if (error || !user) {
       return res.status(400).json({
-        error: "User Not Found",
+        error: "User not found",
       });
     }
-
     req.profile = user;
     next();
   });
@@ -146,8 +124,8 @@ exports.adminMiddleWare = (req, res, next) => {
 // &&&&&&&&&&&&&&& Make Auth UPDATE AND DELETE BLOG &&&&&&&&&&&
 exports.canUpdateDeleteBlog = (req, res, next) => {
   const slug = req.params.slug.toLowerCase();
-  Blog.finOne({ slug }).exec((err, data) => {
-    if (err) {
+  Blog.findOne({ slug }).exec((error, data) => {
+    if (error) {
       return res.status(400).json({
         error: errorHandler(err),
       });

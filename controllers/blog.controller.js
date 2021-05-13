@@ -8,6 +8,7 @@ const _ = require("lodash");
 const { errorHandler } = require("../helpers/dbErrorHandeler");
 const fs = require("fs");
 const { smartTrim } = require("../helpers/blog.helper");
+const User = require("../models/user.model");
 
 exports.create = (req, res) => {
   let form = new formidable.IncomingForm();
@@ -62,7 +63,7 @@ exports.create = (req, res) => {
     blog.postedBy = req.user._id;
 
     if (files.photo) {
-      if (files.photo.size > 100000) {
+      if (files.photo.size > 10000000) {
         return res.status(400).json({
           error: "Image should be less than 1mb in size",
         });
@@ -259,7 +260,7 @@ exports.update = (req, res) => {
       }
 
       if (files.photo) {
-        if (files.photo.size > 10000000) {
+        if (files.photo.size > 1000000000) {
           return res.status(400).json({
             error: "Image should be less then 1mb in size",
           });
