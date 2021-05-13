@@ -1,5 +1,4 @@
 # Blog-ITI-FullStack-Backend
-# Blog-ITI-FullStack-Frontend
 
 This project contains two types of users : <br />
     1-Admin : <br />
